@@ -37,7 +37,7 @@ var server = http.createServer(function (req, res) {
 		});
 	});
 	proxy.web(req, res, {
-		target: "https://cks.nice.org.uk",
+		target: "https://cks.nice.org.uk/search",
 		changeOrigin: true,
 	});
 });
