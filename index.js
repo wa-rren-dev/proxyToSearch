@@ -1,7 +1,7 @@
 var http = require("http");
 var httpProxy = require("http-proxy");
 
-const port = 6123;
+const port = 6000;
 
 var proxy = httpProxy.createProxyServer({
   selfHandleResponse: true,
@@ -11,19 +11,16 @@ function firstCharToLowercase(string) {
   return string.charAt(0).toLowerCase() + string.slice(1);
 }
 
-function ConvertKeysToLowerCase(obj) {
-  var output = {};
-  for (i in obj) {
-    if (Object.prototype.toString.apply(obj[i]) === "[object Object]") {
-      output[firstCharToLowercase(i)] = ConvertKeysToLowerCase(obj[i]);
-    } else if (Object.prototype.toString.apply(obj[i]) === "[object Array]") {
-      output[firstCharToLowercase(i)] = [];
-      output[firstCharToLowercase(i)].push(ConvertKeysToLowerCase(obj[i][0]));
-    } else {
-      output[firstCharToLowercase(i)] = obj[i];
-    }
-  }
-  return output;
+function convertKeysToLowerCase(input) {
+  if (typeof input !== "object" || input === null) return input;
+
+  if (Array.isArray(input)) return input.map(convertKeysToLowerCase);
+  return Object.keys(input).reduce(function (newObj, key) {
+    let val = input[key];
+    let newVal = typeof val === "object" ? convertKeysToLowerCase(val) : val;
+    newObj[firstCharToLowercase(key)] = newVal;
+    return newObj;
+  }, {});
 }
 
 var server = http.createServer(function (req, res) {
@@ -46,15 +43,14 @@ var server = http.createServer(function (req, res) {
       var bodyJSON;
       try {
         bodyJSON = JSON.parse(body);
-        console.log("parsed body");
-        res.end(JSON.stringify(ConvertKeysToLowerCase(bodyJSON)));
+        res.end(JSON.stringify(convertKeysToLowerCase(bodyJSON)));
       } catch (e) {
         console.error(e);
       }
     });
   });
   proxy.web(req, res, {
-    target: "https://cks.nice.org.uk",
+    target: "https://cks.nice.org.uk/search",
     changeOrigin: true,
   });
 });
