@@ -1,7 +1,7 @@
 var http = require("http");
 var httpProxy = require("http-proxy");
 
-const port = 6000;
+const port = 6001;
 
 var proxy = httpProxy.createProxyServer({
   selfHandleResponse: true,
