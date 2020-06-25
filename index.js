@@ -3,6 +3,8 @@ var httpProxy = require("http-proxy");
 
 const port = 6001;
 
+const fail = process.env.FAIL;
+
 var proxy = httpProxy.createProxyServer({
   selfHandleResponse: true,
 });
@@ -43,6 +45,9 @@ var server = http.createServer(function (req, res) {
       var bodyJSON;
       try {
         bodyJSON = JSON.parse(body);
+        if (fail) {
+          bodyJSON.failed = true;
+        }
         res.end(JSON.stringify(convertKeysToLowerCase(bodyJSON)));
       } catch (e) {
         console.error(e);
@@ -56,4 +61,10 @@ var server = http.createServer(function (req, res) {
 });
 
 console.log(`Proxy listening on port ${port}`);
+
+if (fail) {
+  console.log("Forcing failed to equal true");
+}
+
+
 server.listen(port);
